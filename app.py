@@ -2,9 +2,10 @@ from simplejson import JSONDecodeError
 from requests import HTTPError
 from flask import Flask
 from flask import request
+from flask import jsonify
 app = Flask(__name__)
 import requests
-DEBUG_MODE = TRUE
+DEBUG_MODE = True
 
 
 class MergedStream:
@@ -48,19 +49,38 @@ class MergedStream:
         except (HTTPError, JSONDecodeError, KeyError):
             raise Exception('Error getting next element in stream %s' % stream)
 
-m = MergedStream('foo', 'bar')
+# In a production environment this would be some kind of web server
+# or distributed cache.
+lazy_stream_cache = {}
 
 
 @app.route('/')
 def hello_world():
 
-    while True:
-        v = m.next()
-        print v
-        if not v:
-            break
-
     return 'Hi! This is a test task from PelotonCycle'
+
+
+@app.route('/quiz/next')
+def merge():
+
+    if request.method != 'GET':
+        return jsonify({'error': 'this endpoint only accepts GETs'})
+    try:
+        stream1 = request.args['stream1']
+        stream2 = request.args['stream2']
+    except KeyError:
+        return jsonify({'error': 'stream arguments not passed'})
+    try:
+        m = lazy_stream_cache[stream1, stream2]
+    except KeyError:
+        m = MergedStream(stream1, stream2)
+        lazy_stream_cache[stream1, stream2] = m
+
+    try:
+        return jsonify(m.next())
+    except Exception, e:
+        # in prod environment log this or send an alert
+        return jsonify({'error': e.message})
 
 if __name__ == '__main__':
     app.run(debug=DEBUG_MODE)
