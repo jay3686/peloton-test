@@ -1,3 +1,4 @@
+import os
 from simplejson import JSONDecodeError
 from requests import HTTPError
 from flask import Flask
@@ -5,7 +6,7 @@ from flask import request
 from flask import jsonify
 app = Flask(__name__)
 import requests
-DEBUG_MODE = True
+DEBUG_MODE = False
 
 
 class MergedStream:
@@ -82,5 +83,6 @@ def merge():
         # in prod environment log this or send an alert
         return jsonify({'error': e.message})
 
-if __name__ == '__main__':
-    app.run(debug=DEBUG_MODE)
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port, debug=DEBUG_MODE)
