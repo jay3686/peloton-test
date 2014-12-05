@@ -59,7 +59,7 @@ def hello_world():
     return 'Hi! This is a test task from PelotonCycle'
 
 
-@app.route('/quiz/next')
+@app.route('/quiz/merge')
 def merge():
 
     if request.method != 'GET':
