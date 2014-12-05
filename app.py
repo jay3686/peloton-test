@@ -25,9 +25,7 @@ class MergedStream:
         if self.second_top is None:
             self.second_top = self.next_from_stream(self.second_stream)
 
-        if (self.first_top is not None and
-                self.first_top <= self.second_top or
-                self.second_top is None):
+        if self.first_top <= self.second_top:
             next_val = self.first_top
             self.first_top = None
         else:
